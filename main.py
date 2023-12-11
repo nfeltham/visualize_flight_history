@@ -9,8 +9,6 @@ from svgpathtools import svg2paths
 from svgpath2mpl import parse_path
 from datetime import datetime
 
-# ax = plt.axes(projection=ccrs.PlateCarree())
-# ax.stock_img()
 
 class plotFlightPath():
     imagery = OSM()
