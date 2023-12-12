@@ -169,7 +169,7 @@ class plotFlightPath():
         
         if map_size <= 4:
             return 7
-        if map_size <= 7:
+        elif map_size <= 7:
             return 6
         else:
             return 5
