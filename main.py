@@ -19,7 +19,7 @@ class plotFlightPath():
     size_min = 2
 
     # scale the number of points plotted in each flight
-    num_points_scale = 20
+    num_points_scale = 5
 
     # scale the spacing of the points : higher number means less points in the middle of the flight
     line_sample_power = 2
@@ -40,7 +40,8 @@ class plotFlightPath():
     output_dir = "./.tmp_images"
 
     # airline : color for visualizing the airplane marker
-    aircraft_colors = {"UA":"b", "AA":"r", "LH": "y", "DL": "g", "KLM": "c"}
+    aircraft_colors = {"UA":"MediumSlateBlue", "AA":"IndianRed", "LH": "Yellow", "DL": "DarkRed", "KLM": "Pink", "EI":"Green"}
+     # aircraft_colors = {"UA":"b", "AA":"r", "LH": "y", "DL": "g", "KLM": "c"}
 
     # lat, lon of airports
     airport_coords = {"CLT" : [35.2145, -80.9488],
@@ -66,6 +67,9 @@ class plotFlightPath():
                       "BRE" : [53.0480, 8.7859],
                       "GUC" : [38.3202, -106.5559],
                       "DEN" : [39.8563, -104.6764],
+                      "DUB" : [53.4256, -6.2574],
+                      "BWI" : [39.1776, -76.6684],
+                      "HKG" : [22.3135, 113.9137],
                       }
 
     def __init__(self):
@@ -110,7 +114,7 @@ class plotFlightPath():
         create the legened for the plots. Currently just a bar becuase I cant figure out how to make it the airplane marker 
         """
         
-        full_names = {"UA":"United", "AA":"American", "LH": "Lufthansa", "DL": "Delta", "KLM": "KLM"}
+        full_names = {"UA":"United", "AA":"American", "LH": "Lufthansa", "DL": "Delta", "KLM": "KLM", "EI":"Aer Lingus"}
         self.legend_elements = [mpl.patches.Circle((0,0), radius=.01, color=self.aircraft_colors[key], label=full_names[key]) for key in self.aircraft_colors.keys()]
 
         
@@ -214,7 +218,15 @@ class plotFlightPath():
         plt.savefig(f"{self.output_dir}/img_{plot_index}.png", dpi=250)
         plt.close()
 
-        
+
+    def _init_check_data(self,values):
+        """
+        Check to make sure all airlines are available before starting.
+        """
+        if not values[3] in self.aircraft_colors.keys() and not values[3] in self.missing_airlines:
+           self.missing_airlines.append(values[3])
+
+            
     def _check_non_consecutive_city(self, list_of_coords):
         """
         Add points between cities when the takeoff city is not the same as the previous landing city. Makes the video less jumpy and easier to follow. 
@@ -263,7 +275,6 @@ class plotFlightPath():
         """
         Plot multiple flights given a list of flight data
         """
-        
         plot_index = 0
 
         for i in range(len(list_of_coords)):
@@ -280,16 +291,21 @@ class plotFlightPath():
         csvFile = open(csvFile, "r")
 
         header = csvFile.readline()
-        list_of_coords = []
+        list_of_coords, self.missing_airlines = [], []
 
         while True:
             line = csvFile.readline()
             if line == "":
                 break
             values = [text.strip() for text in line.split(",")]
+            self._init_check_data(values)
             newRow = [self.airport_coords[values[1]], self.airport_coords[values[2]], values[0], values[3]]
             list_of_coords.append(newRow)
 
+        if len(self.missing_airlines) != 0:
+            print(f"Missing airline color(s): {self.missing_airlines}")
+            exit()
+            
         list_of_coords = self._check_non_consecutive_city(list_of_coords)
         
         self.plot_multiple_trips(list_of_coords)
@@ -301,6 +317,8 @@ if __name__ == "__main__":
     
     ad = plotFlightPath()
     # ad.projection = ccrs.Geodetic()
+
+    ad.single_trip_plot(ad.airport_coords["SFO"], ad.airport_coords["HKG"], "08/23/2024", "UA", start_index=0, single_trip=True)
     
-    ad.video_name = "output2"
-    ad.plot_from_csv(csv_name)
+    #ad.video_name = "output2"
+    #ad.plot_from_csv(csv_name)
