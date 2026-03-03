@@ -11,4 +11,4 @@ Then, configure the flight_data.csv file with your flight segments. If you only 
 Run main.py, and your output video will be saved once the program is complete.
 
 Example output:
-<video src="[example.mp4]" controls width="600"></video>
+![Example output](example.gif)
